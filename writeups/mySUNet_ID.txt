@@ -1,0 +1,20 @@
+telnet cs144.keithw.org http                                                                                                                                             llh@Adachi-arch
+Trying 104.196.238.229...
+Connected to cs144.keithw.org.
+Escape character is '^]'.
+GET /lab0/yuri HTTP/1.1
+Host: cs144.keithw.org
+Connection: close
+
+HTTP/1.1 200 OK
+Date: Tue, 13 Dec 2022 04:38:28 GMT
+Server: Apache
+X-You-Said-Your-SunetID-Was: yuri
+X-Your-Code-Is: 371944
+Content-length: 108
+Vary: Accept-Encoding
+Connection: close
+Content-Type: text/plain
+
+Hello! You told us that your SUNet ID was "yuri". Please see the HTTP headers (above) for your secret code.
+Connection closed by foreign host.

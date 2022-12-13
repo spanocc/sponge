@@ -1,9 +1,9 @@
 Lab 0 Writeup
 =============
 
-My name: [your name here]
+My name: [Adachi]
 
-My SUNet ID: [your sunetid here]
+My SUNet ID: [yuri]
 
 I collaborated with: [list sunetids here]
 
