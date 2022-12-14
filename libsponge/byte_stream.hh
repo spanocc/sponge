@@ -11,13 +11,18 @@
 class ByteStream {
   private:
     // Your code here -- add private members as necessary.
-
+    const size_t max_capacity;
+    size_t used_capacity = 0;
+    size_t total_read = 0;
+    size_t total_write = 0;
+    std::string byte_buffer;
+    bool _end_input = 0; // 表示输入流是否结束
     // Hint: This doesn't need to be a sophisticated data structure at
     // all, but if any of your tests are taking longer than a second,
     // that's a sign that you probably want to keep exploring
     // different approaches.
 
-    bool _error{};  //!< Flag indicating that the stream suffered an error.
+    bool _error{};  //!< Flag indicating that the stream suffered an error. 把error初始化为0
 
   public:
     //! Construct a stream with room for `capacity` bytes.
