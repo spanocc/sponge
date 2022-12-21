@@ -41,7 +41,7 @@ int main() {
             shuffle(seq_size.begin(), seq_size.end(), rd);
 
             string d(offset, 0);
-            generate(d.begin(), d.end(), [&] { return rd(); });
+            generate(d.begin(), d.end(), [&] { return rd(); });          
 
             for (auto [off, sz] : seq_size) {
                 string dd(d.cbegin() + off, d.cbegin() + off + sz);
