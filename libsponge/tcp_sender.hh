@@ -9,6 +9,29 @@
 #include <functional>
 #include <queue>
 
+#include <map>
+
+// declare for friend
+class TCPSender;
+
+class RetransmissonTimer {
+friend TCPSender;
+  private:
+    // 保存outstanding segment的数据结构,有效载荷部分buffer只会增加引用计数，不会实际拷贝
+    std::map<uint64_t, TCPSegment> _outstanding_seg;
+    // 计时器开关
+    bool _timer_switch;
+    // 距离上次计时器清0或重启后经过的时间
+    size_t _has_passed;
+    // 超时时间
+    size_t _rto;
+    // 连续重传的次数
+    size_t _nrtsm;
+
+  public:
+    RetransmissonTimer(size_t retx_timeout) : _outstanding_seg(), _timer_switch(false), _has_passed(0), _rto(retx_timeout), _nrtsm(0) {}
+};
+
 //! \brief The "sender" part of a TCP implementation.
 
 //! Accepts a ByteStream, divides it up into segments and sends the
@@ -31,6 +54,25 @@ class TCPSender {
 
     //! the (absolute) sequence number for the next byte to be sent
     uint64_t _next_seqno{0};
+
+    //! retransmisson timer
+    RetransmissonTimer _rt;
+
+    //! window size 接收窗口大小, 初始值为1
+    uint16_t _win; 
+
+    //! 已经被确认过的最大ackno的绝对序列号
+    uint64_t _prev_seqno;
+
+    // How many sequence numbers are occupied by segments sent but not yet acknowledged?
+    size_t _bytes_in_flight;
+    
+    // The state of TCPSender
+    enum STATE{CLOSE, SYN_SENT, SYN_ACKED, FIN_SENT, FIN_ACKED};
+    int state;
+
+    // win == 0时，是否发过tcpsegment
+    bool _win_zero_used;
 
   public:
     //! Initialize a TCPSender
@@ -87,6 +129,9 @@ class TCPSender {
     //! \brief relative seqno for the next byte to be sent
     WrappingInt32 next_seqno() const { return wrap(_next_seqno, _isn); }
     //!@}
+
+    // 重传第一个未确认的TCP段
+    void retransmission();
 };
 
 #endif  // SPONGE_LIBSPONGE_TCP_SENDER_HH

@@ -20,7 +20,7 @@ class TCPReceiver {
     //! The maximum number of bytes we'll store.
     size_t _capacity;
     // ackno的三种状态
-    enum STATE {EMPTY, EXIST, END};
+    enum STATE {LISTEN, SYN_RECV, FIN_RECV};
     int state;
     WrappingInt32 isn;
     // WrappingInt32 ackno;
@@ -31,7 +31,7 @@ class TCPReceiver {
     //!
     //! \param capacity the maximum number of bytes that the receiver will
     //!                 store in its buffers at any give time.
-    TCPReceiver(const size_t capacity) : _reassembler(capacity), _capacity(capacity), state(EMPTY), isn(0) {}
+    TCPReceiver(const size_t capacity) : _reassembler(capacity), _capacity(capacity), state(LISTEN), isn(0) {}
 
     //! \name Accessors to provide feedback to the remote TCPSender
     //!@{

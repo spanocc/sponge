@@ -16,10 +16,10 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
     if(seg.header().syn) {
         //if(state != EMPTY) throw runtime_error("TCPReceiver: repeated syn");
         isn = seg.header().seqno;
-        state = EXIST;
+        state = SYN_RECV;
     }
 
-    if(state == EMPTY) return;
+    if(state == LISTEN) return;
 
     bool eof = seg.header().fin;
     uint64_t checkpoint = 0;
@@ -34,18 +34,18 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
     _reassembler.push_substring(seg.payload().copy(), index, eof);
     //}
 
-    if(eof) state = END;
+    if(eof) state = FIN_RECV;
 
    
 }
 
 optional<WrappingInt32> TCPReceiver::ackno() const { 
-    if(state == EMPTY) return nullopt;
+    if(state == LISTEN) return nullopt;
 
     uint64_t absolute_seqno = _reassembler.next_index();
     //if(state == EXIST) absolute_seqno += 1;
-    if(state == END && _reassembler.unassembled_bytes() == 0) absolute_seqno += 2;
-    else if(state == EXIST || state == END) absolute_seqno += 1;
+    if(state == FIN_RECV && _reassembler.unassembled_bytes() == 0) absolute_seqno += 2;
+    else if(state == SYN_RECV || state == FIN_RECV) absolute_seqno += 1;
     return wrap(absolute_seqno, isn);
 
 }
