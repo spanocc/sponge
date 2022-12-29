@@ -41,6 +41,10 @@ void TCPConnection::send_reset_segment() {   // cout<<"hhhh";
     _sender.send_empty_segment();
     _sender.segments_out().back().header().rst = true;
     send_segment();
+    /*TCPSegment tcpseg;
+    tcpseg.header().rst = true;
+    tcpseg.payload() = std::string();
+    _segments_out.push(tcpseg);*/
 
     _sender.stream_in().set_error();
     _receiver.stream_out().set_error();
@@ -101,9 +105,15 @@ size_t TCPConnection::write(const string &data) {
 
 //! \param[in] ms_since_last_tick number of milliseconds since the last call to this method
 void TCPConnection::tick(const size_t ms_since_last_tick) { // DUMMY_CODE(ms_since_last_tick); 
+    _time_since_last_segment_received += ms_since_last_tick;
+    if(_sender.consecutive_retransmissions() >= TCPConfig::MAX_RETX_ATTEMPTS) { // 加上本次重传就大于MAX_RETX_ATTEMPTS了，而本次不能重传，而是发一个rst
+        send_reset_segment();
+        return;
+    }
+
     _sender.tick(ms_since_last_tick);
     send_segment();
-    _time_since_last_segment_received += ms_since_last_tick;
+
 
     if(_receiver.stream_out().input_ended() && _sender.stream_in().eof() 
         && _sender.next_seqno_absolute() == _sender.stream_in().bytes_written() + 2 && bytes_in_flight() == 0 
@@ -115,9 +125,7 @@ void TCPConnection::tick(const size_t ms_since_last_tick) { // DUMMY_CODE(ms_sin
         && _time_since_last_segment_received >= 10 * _cfg.rt_timeout)
         _active = false;
 
-    if(_sender.consecutive_retransmissions() > TCPConfig::MAX_RETX_ATTEMPTS) {
-        send_reset_segment();
-    }
+
 }
 
 void TCPConnection::end_input_stream() {
