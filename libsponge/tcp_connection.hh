@@ -27,7 +27,7 @@ class TCPConnection {
     size_t _time_since_last_segment_received{0}; 
 
     //! TCPConnection is still alive or not
-    bool _active{false};
+    bool _active{true};
 
   public:
     //! \name "Input" interface for the writer

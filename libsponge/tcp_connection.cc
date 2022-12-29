@@ -62,6 +62,8 @@ void TCPConnection::segment_received(const TCPSegment &seg) { //DUMMY_CODE(seg);
     // 将段给tcpreceiver
     _receiver.segment_received(seg);
 
+    // if(_receiver.ackno().has_value() && !_receiver.stream_out().input_ended()) _active = true;
+
     if(_receiver.stream_out().input_ended() && !_sender.stream_in().eof()) _linger_after_streams_finish = false;
 
     if(_receiver.stream_out().input_ended() && _sender.stream_in().eof() 
@@ -129,7 +131,7 @@ void TCPConnection::connect() {
         send_segment();
     }
     else std::cerr<<"Should not be here! TCPConnection: connect has been builded!\n";
-    _active = true;
+    // _active = true;
 }
 
 TCPConnection::~TCPConnection() {
