@@ -77,6 +77,8 @@ void TCPConnection::segment_received(const TCPSegment &seg) { //DUMMY_CODE(seg);
     if(seg.header().ack) {
         _sender.ack_received(seg.header().ackno, seg.header().win);
     }
+    else _sender.fill_window(); // 如果没设置ack标志，说明对方发的是是初始段，那我们也应该发一个初始段，通过fill_window 
+
     // 如果传入的段占序列号，至少发送一个段应答
     if(seg.length_in_sequence_space() > 0 && _sender.segments_out().empty()) {
         _sender.send_empty_segment(); // 发一个带ackno和win的空段
