@@ -64,7 +64,9 @@ void TCPConnection::segment_received(const TCPSegment &seg) { //DUMMY_CODE(seg);
 
     if(_receiver.stream_out().input_ended() && !_sender.stream_in().eof()) _linger_after_streams_finish = false;
 
-    if(_receiver.stream_out().input_ended() && _sender.stream_in().eof() && _linger_after_streams_finish == false)
+    if(_receiver.stream_out().input_ended() && _sender.stream_in().eof() 
+        && _sender.next_seqno_absolute() == _sender.stream_in().bytes_written() + 2 && bytes_in_flight() == 0 
+        && _linger_after_streams_finish == false)
         _active = false;
 
     _time_since_last_segment_received = 0;
@@ -99,10 +101,14 @@ void TCPConnection::tick(const size_t ms_since_last_tick) { // DUMMY_CODE(ms_sin
     send_segment();
     _time_since_last_segment_received += ms_since_last_tick;
 
-    if(_receiver.stream_out().input_ended() && _sender.stream_in().eof() && _linger_after_streams_finish == false)
+    if(_receiver.stream_out().input_ended() && _sender.stream_in().eof() 
+        && _sender.next_seqno_absolute() == _sender.stream_in().bytes_written() + 2 && bytes_in_flight() == 0 
+        && _linger_after_streams_finish == false)
         _active = false;
 
-    if(_receiver.stream_out().input_ended() && _sender.stream_in().eof() && _time_since_last_segment_received >= 10 * _cfg.rt_timeout)
+    if(_receiver.stream_out().input_ended() && _sender.stream_in().eof() 
+        && _sender.next_seqno_absolute() == _sender.stream_in().bytes_written() + 2 && bytes_in_flight() == 0
+        && _time_since_last_segment_received >= 10 * _cfg.rt_timeout)
         _active = false;
 
     if(_sender.consecutive_retransmissions() > TCPConfig::MAX_RETX_ATTEMPTS) {

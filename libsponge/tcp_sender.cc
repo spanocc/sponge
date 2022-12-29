@@ -24,9 +24,9 @@ TCPSender::TCPSender(const size_t capacity, const uint16_t retx_timeout, const s
 
 uint64_t TCPSender::bytes_in_flight() const { return _bytes_in_flight; }
 
-void TCPSender::retransmission() {
-    if(_rt._outstanding_seg.empty()) return;
-    _segments_out.push(_rt._outstanding_seg.begin()->second);
+void TCPSender::retransmission() { // cout<<"eeeee";
+    if(_rt._outstanding_seg.empty()) return; 
+    _segments_out.push(_rt._outstanding_seg.begin()->second);   // cout<<"rrrrr";
 }
 
 void TCPSender::fill_window() {   
@@ -146,13 +146,14 @@ void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
 
 //! \param[in] ms_since_last_tick the number of milliseconds since the last call to this method
 void TCPSender::tick(const size_t ms_since_last_tick) { //DUMMY_CODE(ms_since_last_tick);
-    _rt._has_passed += ms_since_last_tick;
-    if(_rt._timer_switch && _rt._has_passed >= _rt._rto) {
-        retransmission();
-        if(_win) {
+    _rt._has_passed += ms_since_last_tick;                 //cout<<"qqqqq"<<_rt._rto<<" "<<_rt._has_passed<<" ";
+    if(_rt._timer_switch && _rt._has_passed >= _rt._rto) {       //cout<<"wwwww";
+    // 必须当有数据可以重传，才会重传并扩大rto
+        if(_win && !_rt._outstanding_seg.empty()) {
             _rt._nrtsm++;
             _rt._rto *= 2;
         }
+        retransmission();
         _rt._has_passed = 0;
     }
 }
