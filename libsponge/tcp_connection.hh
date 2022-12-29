@@ -6,6 +6,8 @@
 #include "tcp_sender.hh"
 #include "tcp_state.hh"
 
+#include <limits>
+
 //! \brief A complete endpoint of a TCP connection
 class TCPConnection {
   private:
@@ -20,6 +22,12 @@ class TCPConnection {
     //! for 10 * _cfg.rt_timeout milliseconds after both streams have ended,
     //! in case the remote TCPConnection doesn't know we've received its whole stream?
     bool _linger_after_streams_finish{true};
+
+    //! Number of milliseconds since the last segment was received.
+    size_t _time_since_last_segment_received{0}; 
+
+    //! TCPConnection is still alive or not
+    bool _active{false};
 
   public:
     //! \name "Input" interface for the writer
@@ -79,6 +87,12 @@ class TCPConnection {
     //! after both streams have finished (e.g. to ACK retransmissions from the peer)
     bool active() const;
     //!@}
+
+    //! TCPConnection sends segment
+    void send_segment();
+
+    //! send reset segment
+    void send_reset_segment();
 
     //! Construct a new connection from a configuration
     explicit TCPConnection(const TCPConfig &cfg) : _cfg{cfg} {}
