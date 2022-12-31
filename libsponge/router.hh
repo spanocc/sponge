@@ -6,6 +6,8 @@
 #include <optional>
 #include <queue>
 
+#include <vector>
+
 //! \brief A wrapper for NetworkInterface that makes the host-side
 //! interface asynchronous: instead of returning received datagrams
 //! immediately (from the `recv_frame` method), it stores them for
@@ -49,6 +51,17 @@ class Router {
     //! datagram's destination address.
     void route_one_datagram(InternetDatagram &dgram);
 
+    //!路由表项
+    struct RouteEntry {
+        uint32_t route_prefix{};
+        uint8_t prefix_length{};
+        std::optional<Address> next_hop = std::nullopt;
+        size_t interface_num{};
+    };
+
+    //! 路由表
+    std::vector<RouteEntry> _route_table{};
+
   public:
     //! Add an interface to the router
     //! \param[in] interface an already-constructed network interface
@@ -69,6 +82,8 @@ class Router {
 
     //! Route packets between the interfaces
     void route();
+
+    bool route_match(const uint32_t& re, const uint32_t& ip, uint8_t plen);
 };
 
 #endif  // SPONGE_LIBSPONGE_ROUTER_HH
