@@ -8,6 +8,19 @@
 #include <optional>
 #include <queue>
 
+#include <map>
+#include <vector>
+
+
+struct EthernetInfo {
+  EthernetAddress _ethernet_address;
+  union {
+    size_t _time_wait_to_respond;
+    size_t _time_to_live;
+  };
+  bool has_mapped;   // has_mapped == 1时，记录存活时间（30s），否则记录等待时间（5s）
+};
+
 //! \brief A "network interface" that connects IP (the internet layer, or network layer)
 //! with Ethernet (the network access layer, or link layer).
 
@@ -40,6 +53,12 @@ class NetworkInterface {
     //! outbound queue of Ethernet frames that the NetworkInterface wants sent
     std::queue<EthernetFrame> _frames_out{};
 
+    //! 还没确定MAC地址的ip数据报队列
+    std::multimap<uint32_t, InternetDatagram> _ipdatagram_out{}; // 理论上来说，收到的APR应答不一定和ip数据包队列的顺序是一一对应的，所以删除操作不一定是顺序的，所以用链表
+
+    //! ip到链路层地址的映射
+    std::map<uint32_t, EthernetInfo> _ethernet_map{};
+
   public:
     //! \brief Construct a network interface with given Ethernet (network-access-layer) and IP (internet-layer) addresses
     NetworkInterface(const EthernetAddress &ethernet_address, const Address &ip_address);
@@ -62,6 +81,10 @@ class NetworkInterface {
 
     //! \brief Called periodically when time elapses
     void tick(const size_t ms_since_last_tick);
+
+    //! send an ARP request
+    void ARP_request(uint32_t next_hop_ip);
+
 };
 
 #endif  // SPONGE_LIBSPONGE_NETWORK_INTERFACE_HH
